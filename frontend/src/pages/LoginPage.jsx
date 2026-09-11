@@ -32,7 +32,12 @@ export default function LoginPage() {
       toast.success(`Welcome back, ${user.name}!`);
       navigate(user.role === 'admin' ? '/admin' : '/dashboard');
     } catch (err) {
-      toast.error(err.response?.data?.error || 'Login failed');
+      const errData = err.response?.data;
+      const errorMsg =
+        typeof errData?.error === 'string'
+          ? errData.error
+          : errData?.error?.message || errData?.message || 'Invalid email or password';
+      toast.error(errorMsg);
     } finally {
       setLoading(false);
     }
