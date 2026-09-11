@@ -94,6 +94,10 @@ export default function ApiKeysPage() {
 
   const activeKeySample = revealedKey || (keys.length > 0 ? keys[0].key_prefix.replace('...', 'YOUR_FULL_KEY') : 'pt_live_YOUR_API_KEY');
 
+  const apiBaseUrl = typeof window !== 'undefined' && window.location.origin
+    ? window.location.origin
+    : 'https://parttract.vercel.app';
+
   const codeSnippets = {
     html: `<!-- WordPress / Custom HTML Block Embed -->
 <!-- Paste directly into a "Custom HTML" block in WordPress Gutenberg, Elementor, Divi, or any website -->
@@ -121,7 +125,7 @@ export default function ApiKeysPage() {
       resDiv.innerHTML = '<span style="color: #94a3b8;">Searching shipment...</span>';
 
       try {
-        var res = await fetch('http://localhost:5000/api/v1/track/' + encodeURIComponent(num), {
+        var res = await fetch('${apiBaseUrl}/api/v1/track/' + encodeURIComponent(num), {
           headers: { 'X-API-Key': '${activeKeySample}' }
         });
         var json = await res.json();
@@ -149,7 +153,7 @@ export default function ApiKeysPage() {
 </script>`,
     javascript: `// JavaScript (Browser Fetch)
 async function trackShipment(trackingNumber) {
-  const res = await fetch(\`http://localhost:5000/api/v1/track/\${trackingNumber}\`, {
+  const res = await fetch(\`${apiBaseUrl}/api/v1/track/\${trackingNumber}\`, {
     headers: {
       'X-API-Key': '${activeKeySample}'
     }
@@ -163,13 +167,13 @@ async function trackShipment(trackingNumber) {
   }
 }`,
     curl: `# cURL (Terminal / Command Line)
-curl -X GET "http://localhost:5000/api/v1/track/573978943296" \\
+curl -X GET "${apiBaseUrl}/api/v1/track/573978943296" \\
   -H "X-API-Key: ${activeKeySample}"`,
     node: `// Node.js (Axios)
 const axios = require('axios');
 
 async function track(number) {
-  const { data } = await axios.get(\`http://localhost:5000/api/v1/track/\${number}\`, {
+  const { data } = await axios.get(\`${apiBaseUrl}/api/v1/track/\${number}\`, {
     headers: { 'X-API-Key': '${activeKeySample}' }
   });
   return data;
@@ -178,7 +182,7 @@ async function track(number) {
 import requests
 
 response = requests.get(
-    "http://localhost:5000/api/v1/track/573978943296",
+    "${apiBaseUrl}/api/v1/track/573978943296",
     headers={"X-API-Key": "${activeKeySample}"}
 )
 print(response.json())`,
@@ -349,7 +353,7 @@ print(response.json())`,
         </div>
 
         <p className="text-xs text-surface-400 leading-relaxed">
-          Send an HTTP GET request to <code className="text-brand-400 font-mono bg-surface-950 px-1.5 py-0.5 rounded border border-surface-800">http://localhost:5000/api/v1/track/:trackingNumber</code> with your API key in the <code className="text-amber-400 font-mono bg-surface-950 px-1.5 py-0.5 rounded border border-surface-800">X-API-Key</code> header.
+          Send an HTTP GET request to <code className="text-brand-400 font-mono bg-surface-950 px-1.5 py-0.5 rounded border border-surface-800">{apiBaseUrl}/api/v1/track/:trackingNumber</code> with your API key in the <code className="text-amber-400 font-mono bg-surface-950 px-1.5 py-0.5 rounded border border-surface-800">X-API-Key</code> header.
         </p>
 
         {/* Code Tabs */}
