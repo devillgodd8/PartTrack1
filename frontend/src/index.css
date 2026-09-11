@@ -1,0 +1,152 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  html {
+    color-scheme: dark;
+  }
+
+  body {
+    @apply bg-surface-950 text-surface-100 font-sans antialiased selection:bg-brand-500/30 selection:text-brand-200;
+    min-height: 100vh;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* Refined minimal scrollbar */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    @apply bg-surface-950;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-surface-700/80 rounded-full hover:bg-surface-600 transition-colors;
+  }
+}
+
+@layer components {
+  /* Surfaces & Cards */
+  .card {
+    @apply bg-surface-900 border border-surface-800 rounded-xl shadow-sm transition-all duration-200;
+  }
+
+  .card-hover {
+    @apply hover:border-surface-700 hover:shadow-md;
+  }
+
+  .glass-card {
+    @apply bg-surface-900/90 backdrop-blur-md border border-surface-800 rounded-xl shadow-lg transition-all duration-200;
+  }
+
+  /* Input Controls */
+  .input {
+    @apply w-full px-3.5 py-2.5 bg-surface-950 border border-surface-700 rounded-lg
+           text-sm text-surface-100 placeholder-surface-500
+           transition-all duration-150
+           hover:border-surface-600
+           focus:outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20
+           disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .input-label {
+    @apply block text-xs font-semibold text-surface-300 uppercase tracking-wider mb-1.5;
+  }
+
+  .input-helper {
+    @apply mt-1.5 text-xs text-surface-400;
+  }
+
+  .input-error-text {
+    @apply mt-1.5 text-xs text-rose-400 font-medium;
+  }
+
+  /* Button System */
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 px-4 py-2.5
+           font-medium text-sm rounded-lg
+           transition-all duration-150 select-none
+           active:scale-[0.98]
+           focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500/50 focus-visible:ring-offset-2 focus-visible:ring-offset-surface-950
+           disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none;
+  }
+
+  .btn-primary {
+    @apply btn bg-brand-600 text-white hover:bg-brand-500 active:bg-brand-700
+           shadow-sm border border-brand-500/30;
+  }
+
+  .btn-secondary {
+    @apply btn bg-surface-800 text-surface-200 hover:bg-surface-700 hover:text-white
+           border border-surface-700 active:bg-surface-900 shadow-sm;
+  }
+
+  .btn-danger {
+    @apply btn bg-rose-600/90 text-white hover:bg-rose-500 active:bg-rose-700
+           border border-rose-500/40 shadow-sm;
+  }
+
+  .btn-ghost {
+    @apply btn bg-transparent text-surface-400 hover:text-surface-100 hover:bg-surface-800/80 active:bg-surface-800;
+  }
+
+  .btn-sm {
+    @apply px-3 py-1.5 text-xs h-8;
+  }
+
+  .btn-icon {
+    @apply p-2 rounded-lg text-surface-400 hover:text-surface-100 hover:bg-surface-800 active:scale-95 transition-all;
+  }
+
+  /* Navigation Links */
+  .sidebar-link {
+    @apply flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium
+           text-surface-400 hover:text-surface-100 hover:bg-surface-800/80
+           transition-all duration-150;
+  }
+
+  .sidebar-link.active {
+    @apply text-brand-400 bg-brand-500/10 font-semibold border-l-2 border-brand-400 shadow-sm;
+  }
+
+  /* Tables */
+  .table-container {
+    @apply w-full overflow-x-auto rounded-xl border border-surface-800 bg-surface-900 shadow-sm;
+  }
+
+  .table-header {
+    @apply px-4 py-3 text-left text-[11px] font-semibold text-surface-400 uppercase tracking-wider bg-surface-950/60 border-b border-surface-800;
+  }
+
+  .table-cell {
+    @apply px-4 py-3.5 text-sm text-surface-200 border-b border-surface-800/60;
+  }
+
+  .table-row {
+    @apply transition-colors duration-100 hover:bg-surface-800/60;
+  }
+
+  /* Badges */
+  .badge {
+    @apply inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium border;
+  }
+}
+
+@layer utilities {
+  .text-gradient {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-brand-400 via-brand-300 to-sky-200;
+  }
+}
