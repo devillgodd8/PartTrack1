@@ -94,9 +94,9 @@ export default function ApiKeysPage() {
 
   const activeKeySample = revealedKey || (keys.length > 0 ? keys[0].key_prefix.replace('...', 'YOUR_FULL_KEY') : 'pt_live_YOUR_API_KEY');
 
-  const apiBaseUrl = typeof window !== 'undefined' && window.location.origin
+  const apiBaseUrl = typeof window !== 'undefined' && window.location.origin.includes('reviorcm.com')
     ? window.location.origin
-    : 'https://parttract.vercel.app';
+    : (import.meta.env.VITE_API_URL ? import.meta.env.VITE_API_URL.replace(/\/api\/?$/, '') : 'https://app.reviorcm.com');
 
   const codeSnippets = {
     html: `<!-- WordPress / Custom HTML Block Embed -->
