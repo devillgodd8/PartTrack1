@@ -61,8 +61,28 @@ app.use('/api/keys', apiKeysRoutes);
 app.use('/api/v1/track', publicTrackingRoutes);
 
 // Health check
-app.get('/api/health', (req, res) => {
-  res.json({ status: 'ok', timestamp: new Date().toISOString() });
+app.get('/api/health', async (req, res) => {
+  try {
+    const db = req.app.get('db');
+    await db.raw('SELECT 1');
+    res.json({
+      status: 'ok',
+      database: 'connected',
+      client: db.client.config.client,
+      hasDatabaseUrl: Boolean(process.env.DATABASE_URL),
+      hasJwtSecret: Boolean(process.env.JWT_SECRET),
+      timestamp: new Date().toISOString(),
+    });
+  } catch (err) {
+    res.status(500).json({
+      status: 'error',
+      database: err.message,
+      client: req.app.get('db')?.client?.config?.client,
+      hasDatabaseUrl: Boolean(process.env.DATABASE_URL),
+      hasJwtSecret: Boolean(process.env.JWT_SECRET),
+      timestamp: new Date().toISOString(),
+    });
+  }
 });
 
 // --- Error Handler ---
