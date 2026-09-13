@@ -61,7 +61,7 @@ class TrackingController {
         // Pagination
         $page = max(1, (int)($_GET['page'] ?? 1));
         $limit = max(1, (int)($_GET['limit'] ?? 25));
-        $offset = ($page - 1) * limit;
+        $offset = ($page - 1) * $limit;
 
         $selectSql = "
             SELECT 

@@ -54,6 +54,7 @@ class AuthController {
         Response::setCookie('token', $token, 86400);
 
         Response::json([
+            'token' => $token,
             'user' => [
                 'id' => $user['id'],
                 'name' => $user['name'],
@@ -192,6 +193,7 @@ class AuthController {
 
         Response::json([
             'message' => 'Account created successfully',
+            'token' => $token,
             'user' => $tokenPayload,
         ], 201);
     }

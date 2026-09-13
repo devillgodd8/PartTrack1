@@ -14,7 +14,7 @@ class AuthMiddleware {
             return self::$currentUser;
         }
 
-        $token = $_COOKIE['token'] ?? Response::getBearerToken();
+        $token = $_COOKIE['token'] ?? Response::getBearerToken() ?? Response::getHeader('X-Auth-Token');
 
         if (empty($token)) {
             Response::error('Authentication required', 401);

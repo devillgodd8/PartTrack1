@@ -5,7 +5,6 @@ error_reporting(E_ALL);
 ini_set('display_errors', '0');
 
 require_once __DIR__ . '/config/env.php';
-loadEnv(__DIR__ . '/.env');
 
 require_once __DIR__ . '/utils/Response.php';
 require_once __DIR__ . '/middleware/CorsMiddleware.php';

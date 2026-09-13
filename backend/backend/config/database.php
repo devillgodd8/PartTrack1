@@ -18,6 +18,24 @@ class Database {
         $databaseUrl = env('DATABASE_URL', '');
         $pgHost = env('PG_HOST', '');
 
+        // If user configured MySQL / MariaDB, connect to it
+        if ($dbClient === 'mysql' || $dbClient === 'mariadb' || str_starts_with($databaseUrl, 'mysql://')) {
+            try {
+                self::$pdo = self::connectMysql($databaseUrl);
+                self::configurePdo(self::$pdo);
+                return self::$pdo;
+            } catch (Throwable $e) {
+                $allowFallback = env('DB_FALLBACK_SQLITE', true);
+                if ($allowFallback) {
+                    error_log("MySQL connection failed: " . $e->getMessage() . ". Falling back to SQLite.");
+                    self::$pdo = self::connectSqlite();
+                    self::configurePdo(self::$pdo);
+                    return self::$pdo;
+                }
+                throw $e;
+            }
+        }
+
         // If user explicitly configured SQLite, respect it
         if ($dbClient === 'sqlite' || $dbClient === 'sqlite3') {
             self::$pdo = self::connectSqlite();
@@ -145,8 +163,40 @@ class Database {
         );
     }
 
+    private static function connectMysql(string $databaseUrl): PDO {
+        $host = env('MYSQL_HOST', env('DB_HOST', ''));
+        $port = (int)env('MYSQL_PORT', env('DB_PORT', 3306));
+        $dbname = env('MYSQL_DATABASE', env('DB_NAME', ''));
+        $user = env('MYSQL_USER', env('DB_USER', ''));
+        $pass = env('MYSQL_PASSWORD', env('DB_PASS', ''));
+
+        if (empty($host) && !empty($databaseUrl) && str_starts_with($databaseUrl, 'mysql://')) {
+            $parsed = parse_url($databaseUrl);
+            $host = $parsed['host'] ?? '127.0.0.1';
+            $port = $parsed['port'] ?? 3306;
+            $dbname = ltrim($parsed['path'] ?? '', '/');
+            $user = isset($parsed['user']) ? urldecode($parsed['user']) : 'root';
+            $pass = isset($parsed['pass']) ? urldecode($parsed['pass']) : '';
+        }
+
+        if (empty($host)) {
+            $host = '127.0.0.1';
+        }
+
+        $dsn = "mysql:host={$host};port={$port};dbname={$dbname};charset=utf8mb4";
+        return new PDO($dsn, $user, $pass, [
+            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+            PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+        ]);
+    }
+
     public static function isPostgres(): bool {
         $client = self::getConnection()->getAttribute(PDO::ATTR_DRIVER_NAME);
         return $client === 'pgsql';
+    }
+
+    public static function isMysql(): bool {
+        $client = self::getConnection()->getAttribute(PDO::ATTR_DRIVER_NAME);
+        return $client === 'mysql';
     }
 }
