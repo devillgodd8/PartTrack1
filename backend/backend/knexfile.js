@@ -1,9 +1,13 @@
 require('dotenv').config();
 const path = require('path');
 
+const isPostgresUrl =
+  process.env.DATABASE_URL &&
+  (process.env.DATABASE_URL.startsWith('postgres://') || process.env.DATABASE_URL.startsWith('postgresql://'));
+
 const usePostgres =
   process.env.DB_CLIENT === 'pg' ||
-  Boolean(process.env.DATABASE_URL) ||
+  Boolean(isPostgresUrl) ||
   Boolean(process.env.PG_HOST);
 
 let dbConfig;

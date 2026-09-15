@@ -56,14 +56,22 @@ router.get('/', async (req, res, next) => {
     if (req.query.date_to) {
       query = query.where('tracking_records.date_created', '<=', req.query.date_to);
     }
+    if (req.query.customer_name) {
+      query = query.where('tracking_records.customer_name', 'like', `%${req.query.customer_name}%`);
+    }
+    if (req.query.customer_number) {
+      query = query.where('tracking_records.customer_number', 'like', `%${req.query.customer_number}%`);
+    }
 
-    // Search across tracking_number, vin, part_stock_number
+    // Search across tracking_number, vin, part_stock_number, customer_name, customer_number
     if (req.query.q) {
       const search = `%${req.query.q}%`;
       query = query.where(function () {
         this.where('tracking_records.tracking_number', 'like', search)
           .orWhere('tracking_records.vin', 'like', search)
-          .orWhere('tracking_records.part_stock_number', 'like', search);
+          .orWhere('tracking_records.part_stock_number', 'like', search)
+          .orWhere('tracking_records.customer_name', 'like', search)
+          .orWhere('tracking_records.customer_number', 'like', search);
       });
     }
 
@@ -199,6 +207,8 @@ router.post('/', createTrackingValidation, async (req, res, next) => {
       current_status,
       estimated_delivery_date,
       notes,
+      customer_name,
+      customer_number,
       assigned_user_id,
     } = req.body;
 
@@ -245,6 +255,8 @@ router.post('/', createTrackingValidation, async (req, res, next) => {
           current_status: status,
           estimated_delivery_date: estimated_delivery_date || null,
           notes: notes || null,
+          customer_name: customer_name ? customer_name.trim() : null,
+          customer_number: customer_number ? customer_number.trim() : null,
           assigned_user_id: assignedUserId,
           created_by_id: req.user.id,
           date_created: now,
@@ -311,7 +323,7 @@ router.put('/:id', updateTrackingValidation, async (req, res, next) => {
     const allowedFields = [
       'part_type', 'vehicle_make', 'vehicle_model', 'vehicle_year',
       'vin', 'part_stock_number', 'shipment_origin', 'destination',
-      'estimated_delivery_date', 'notes',
+      'estimated_delivery_date', 'notes', 'customer_name', 'customer_number',
     ];
 
     // Admin can also reassign

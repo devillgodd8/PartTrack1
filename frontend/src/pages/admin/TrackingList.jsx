@@ -6,6 +6,7 @@ import StatusBadge from '../../components/ui/StatusBadge';
 import Modal from '../../components/ui/Modal';
 import LoadingSpinner from '../../components/ui/LoadingSpinner';
 import EmptyState from '../../components/ui/EmptyState';
+import CopyButton from '../../components/ui/CopyButton';
 import {
   PlusIcon,
   MagnifyingGlassIcon,
@@ -29,7 +30,15 @@ export default function TrackingList() {
   const [loading, setLoading] = useState(true);
   const [pagination, setPagination] = useState({});
   const [search, setSearch] = useState('');
-  const [filters, setFilters] = useState({ status: '', part_type: '', assigned_user_id: '', date_from: '', date_to: '' });
+  const [filters, setFilters] = useState({
+    status: '',
+    part_type: '',
+    customer_name: '',
+    customer_number: '',
+    assigned_user_id: '',
+    date_from: '',
+    date_to: '',
+  });
   const [showFilters, setShowFilters] = useState(false);
   const [deleteModal, setDeleteModal] = useState({ open: false, record: null });
 
@@ -72,7 +81,15 @@ export default function TrackingList() {
   };
 
   const resetFilters = () => {
-    setFilters({ status: '', part_type: '', assigned_user_id: '', date_from: '', date_to: '' });
+    setFilters({
+      status: '',
+      part_type: '',
+      customer_name: '',
+      customer_number: '',
+      assigned_user_id: '',
+      date_from: '',
+      date_to: '',
+    });
     setSearch('');
   };
 
@@ -115,7 +132,7 @@ export default function TrackingList() {
                 type="text"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                placeholder="Search by 12-digit tracking #, VIN, or stock #..."
+                placeholder="Search by tracking #, customer name/number, VIN, or stock #..."
                 className="input pl-9 text-xs sm:text-sm"
               />
             </div>
@@ -152,7 +169,7 @@ export default function TrackingList() {
         </div>
 
         {showFilters && (
-          <div className="mt-4 pt-4 border-t border-surface-800 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 animate-slide-down">
+          <div className="mt-4 pt-4 border-t border-surface-800 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-7 gap-3 animate-slide-down">
             <div>
               <label className="input-label">Status</label>
               <select
@@ -174,6 +191,26 @@ export default function TrackingList() {
                 <option value="">All Types</option>
                 {PART_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
               </select>
+            </div>
+            <div>
+              <label className="input-label">Customer Name</label>
+              <input
+                type="text"
+                value={filters.customer_name}
+                onChange={(e) => setFilters(f => ({ ...f, customer_name: e.target.value }))}
+                placeholder="Filter by customer..."
+                className="input text-xs"
+              />
+            </div>
+            <div>
+              <label className="input-label">Customer Number</label>
+              <input
+                type="text"
+                value={filters.customer_number}
+                onChange={(e) => setFilters(f => ({ ...f, customer_number: e.target.value }))}
+                placeholder="Filter by customer #..."
+                className="input text-xs font-mono"
+              />
             </div>
             <div>
               <label className="input-label">Assigned User</label>
@@ -228,9 +265,12 @@ export default function TrackingList() {
               <div key={record.id} className="card p-4 bg-surface-900 border border-surface-800 space-y-3">
                 <div className="flex items-start justify-between gap-2">
                   <div>
-                    <Link to={`/admin/tracking/${record.id}`} className="font-mono font-bold text-sm text-brand-400 hover:underline">
-                      {record.tracking_number}
-                    </Link>
+                    <div className="flex items-center gap-1.5">
+                      <Link to={`/admin/tracking/${record.id}`} className="font-mono font-bold text-sm text-brand-400 hover:underline">
+                        {record.tracking_number}
+                      </Link>
+                      <CopyButton text={record.tracking_number} title="Copy tracking number" />
+                    </div>
                     <p className="text-xs text-surface-300 mt-0.5">
                       {record.vehicle_year} {record.vehicle_make} {record.vehicle_model}
                     </p>
@@ -239,8 +279,8 @@ export default function TrackingList() {
                 </div>
 
                 <div className="flex items-center justify-between text-xs text-surface-400 pt-2 border-t border-surface-800">
+                  <span>Customer: <strong className="text-surface-200">{record.customer_name || 'N/A'}</strong>{record.customer_number ? ` (${record.customer_number})` : ''}</span>
                   <span>Part: <strong className="text-surface-200">{record.part_type}</strong></span>
-                  <span>Assigned: <strong className="text-surface-200">{record.assigned_user_name}</strong></span>
                 </div>
 
                 <div className="flex items-center justify-between pt-1 text-xs">
@@ -269,6 +309,7 @@ export default function TrackingList() {
               <thead>
                 <tr>
                   <th className="table-header">Tracking #</th>
+                  <th className="table-header">Customer</th>
                   <th className="table-header">Part</th>
                   <th className="table-header">Vehicle</th>
                   <th className="table-header">Status</th>
@@ -281,9 +322,20 @@ export default function TrackingList() {
                 {records.map((record) => (
                   <tr key={record.id} className="table-row">
                     <td className="table-cell">
-                      <Link to={`/admin/tracking/${record.id}`} className="font-mono font-semibold text-brand-400 hover:text-brand-300">
-                        {record.tracking_number}
-                      </Link>
+                      <div className="inline-flex items-center gap-1.5">
+                        <Link to={`/admin/tracking/${record.id}`} className="font-mono font-semibold text-brand-400 hover:text-brand-300">
+                          {record.tracking_number}
+                        </Link>
+                        <CopyButton text={record.tracking_number} title="Copy tracking number" />
+                      </div>
+                    </td>
+                    <td className="table-cell">
+                      <div className="text-xs">
+                        <p className="font-medium text-surface-200">{record.customer_name || '—'}</p>
+                        {record.customer_number && (
+                          <p className="font-mono text-[11px] text-surface-400 mt-0.5">{record.customer_number}</p>
+                        )}
+                      </div>
                     </td>
                     <td className="table-cell text-surface-300">{record.part_type}</td>
                     <td className="table-cell text-surface-300">

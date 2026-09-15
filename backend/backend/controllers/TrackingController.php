@@ -40,14 +40,24 @@ class TrackingController {
             $where[] = "tr.date_created <= :date_to";
             $params[':date_to'] = $_GET['date_to'];
         }
+        if (!empty($_GET['customer_name'])) {
+            $where[] = "tr.customer_name LIKE :customer_name";
+            $params[':customer_name'] = '%' . trim($_GET['customer_name']) . '%';
+        }
+        if (!empty($_GET['customer_number'])) {
+            $where[] = "tr.customer_number LIKE :customer_number";
+            $params[':customer_number'] = '%' . trim($_GET['customer_number']) . '%';
+        }
 
-        // Search across tracking_number, vin, part_stock_number
+        // Search across tracking_number, vin, part_stock_number, customer_name, customer_number
         if (!empty($_GET['q'])) {
             $search = '%' . trim($_GET['q']) . '%';
-            $where[] = "(tr.tracking_number LIKE :q1 OR tr.vin LIKE :q2 OR tr.part_stock_number LIKE :q3)";
+            $where[] = "(tr.tracking_number LIKE :q1 OR tr.vin LIKE :q2 OR tr.part_stock_number LIKE :q3 OR tr.customer_name LIKE :q4 OR tr.customer_number LIKE :q5)";
             $params[':q1'] = $search;
             $params[':q2'] = $search;
             $params[':q3'] = $search;
+            $params[':q4'] = $search;
+            $params[':q5'] = $search;
         }
 
         $whereSql = !empty($where) ? "WHERE " . implode(' AND ', $where) : "";
@@ -218,13 +228,13 @@ class TrackingController {
                     INSERT INTO tracking_records (
                         id, tracking_number, part_type, vehicle_make, vehicle_model, vehicle_year,
                         vin, part_stock_number, shipment_origin, destination, current_status,
-                        estimated_delivery_date, notes, assigned_user_id, created_by_id,
-                        date_created, last_updated
+                        estimated_delivery_date, notes, customer_name, customer_number,
+                        assigned_user_id, created_by_id, date_created, last_updated
                     ) VALUES (
                         :id, :tracking_number, :part_type, :vehicle_make, :vehicle_model, :vehicle_year,
                         :vin, :part_stock_number, :shipment_origin, :destination, :current_status,
-                        :estimated_delivery_date, :notes, :assigned_user_id, :created_by_id,
-                        :date_created, :last_updated
+                        :estimated_delivery_date, :notes, :customer_name, :customer_number,
+                        :assigned_user_id, :created_by_id, :date_created, :last_updated
                     )
                 ");
 
@@ -242,6 +252,8 @@ class TrackingController {
                     ':current_status' => $status,
                     ':estimated_delivery_date' => !empty($body['estimated_delivery_date']) ? $body['estimated_delivery_date'] : null,
                     ':notes' => !empty($body['notes']) ? trim($body['notes']) : null,
+                    ':customer_name' => !empty($body['customer_name']) ? trim($body['customer_name']) : null,
+                    ':customer_number' => !empty($body['customer_number']) ? trim($body['customer_number']) : null,
                     ':assigned_user_id' => $assignedUserId,
                     ':created_by_id' => $currentUser['id'],
                     ':date_created' => $now,
@@ -308,7 +320,7 @@ class TrackingController {
         $allowedFields = [
             'part_type', 'vehicle_make', 'vehicle_model', 'vehicle_year',
             'vin', 'part_stock_number', 'shipment_origin', 'destination',
-            'estimated_delivery_date', 'notes',
+            'estimated_delivery_date', 'notes', 'customer_name', 'customer_number',
         ];
 
         if ($currentUser['role'] === 'admin') {

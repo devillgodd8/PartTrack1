@@ -46,6 +46,8 @@ CREATE TABLE `tracking_records` (
     `current_status` VARCHAR(50) NOT NULL DEFAULT 'Pending',
     `estimated_delivery_date` DATE DEFAULT NULL,
     `notes` TEXT DEFAULT NULL,
+    `customer_name` VARCHAR(255) DEFAULT NULL,
+    `customer_number` VARCHAR(100) DEFAULT NULL,
     `assigned_user_id` VARCHAR(36) NOT NULL,
     `created_by_id` VARCHAR(36) NOT NULL,
     `date_created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,

@@ -12,6 +12,8 @@ import {
   DocumentTextIcon,
   SparklesIcon,
   CheckCircleIcon,
+  UserIcon,
+  PhoneIcon,
 } from '@heroicons/react/24/outline';
 import toast from 'react-hot-toast';
 
@@ -36,6 +38,8 @@ export default function CreateTracking() {
     current_status: 'Pending',
     estimated_delivery_date: '',
     notes: '',
+    customer_name: '',
+    customer_number: '',
     assigned_user_id: '',
   });
 
@@ -62,7 +66,18 @@ export default function CreateTracking() {
       const payload = { ...form };
       if (!payload.vin) delete payload.vin;
       if (!payload.estimated_delivery_date) delete payload.estimated_delivery_date;
-      if (!payload.notes) delete payload.notes;
+      payload.customer_name = payload.customer_name?.trim();
+      payload.customer_number = payload.customer_number?.trim();
+      if (!payload.customer_name) {
+        toast.error('Customer name is required');
+        setSubmitting(false);
+        return;
+      }
+      if (!payload.customer_number) {
+        toast.error('Customer number is required');
+        setSubmitting(false);
+        return;
+      }
       if (!isAdmin || !payload.assigned_user_id) delete payload.assigned_user_id;
       payload.vehicle_year = parseInt(payload.vehicle_year);
 
@@ -319,7 +334,53 @@ export default function CreateTracking() {
           </div>
         </div>
 
-        {/* Section 5: Internal Notes */}
+        {/* Section 5: Customer Details */}
+        <div className="card p-5 sm:p-6 bg-surface-900 border border-surface-800 space-y-4">
+          <div className="flex items-center gap-2.5 pb-3 border-b border-surface-800">
+            <div className="w-7 h-7 rounded-lg bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400">
+              <UserIcon className="w-4 h-4" />
+            </div>
+            <div>
+              <h2 className="text-sm font-semibold text-surface-100 uppercase tracking-wider">
+                Customer Information
+              </h2>
+              <p className="text-xs text-surface-400">Client details associated with this shipment</p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className="input-label">Customer Name <span className="text-rose-400">*</span></label>
+              <div className="relative">
+                <input
+                  name="customer_name"
+                  value={form.customer_name}
+                  onChange={handleChange}
+                  className="input pl-9"
+                  placeholder="e.g. Acme Motors or John Doe"
+                  required
+                />
+                <UserIcon className="w-4 h-4 text-surface-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+              </div>
+            </div>
+            <div>
+              <label className="input-label">Customer Number <span className="text-rose-400">*</span></label>
+              <div className="relative">
+                <input
+                  name="customer_number"
+                  value={form.customer_number}
+                  onChange={handleChange}
+                  className="input pl-9 font-mono"
+                  placeholder="e.g. +1 (555) 123-4567 or CST-8921"
+                  required
+                />
+                <PhoneIcon className="w-4 h-4 text-surface-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Section 6: Internal Notes */}
         <div className="card p-5 sm:p-6 bg-surface-900 border border-surface-800 space-y-4">
           <div className="flex items-center gap-2.5 pb-3 border-b border-surface-800">
             <div className="w-7 h-7 rounded-lg bg-purple-500/10 border border-purple-500/20 flex items-center justify-center text-purple-400">

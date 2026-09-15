@@ -20,6 +20,7 @@ import {
   IdentificationIcon,
   CubeIcon,
   DocumentTextIcon,
+  PhoneIcon,
 } from '@heroicons/react/24/outline';
 import { format } from 'date-fns';
 import toast from 'react-hot-toast';
@@ -211,6 +212,8 @@ export default function TrackingDetail() {
                 label="Estimated Delivery"
                 value={record.estimated_delivery_date ? format(new Date(record.estimated_delivery_date), 'MMMM d, yyyy') : 'Pending Schedule'}
               />
+              <InfoItem icon={UserIcon} label="Customer Name" value={record.customer_name || 'Not Specified'} />
+              <InfoItem icon={PhoneIcon} label="Customer Number" value={record.customer_number || 'Not Specified'} mono={Boolean(record.customer_number)} />
               <InfoItem icon={UserIcon} label="Assigned Account" value={record.assigned_user_name || 'N/A'} />
               <InfoItem icon={UserIcon} label="Record Creator" value={record.created_by_name || 'System Admin'} />
               <InfoItem icon={ClockIcon} label="Creation Timestamp" value={record.date_created ? format(new Date(record.date_created), 'MMM d, yyyy h:mm a') : 'N/A'} mono />

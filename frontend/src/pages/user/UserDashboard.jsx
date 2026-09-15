@@ -6,6 +6,7 @@ import StatsCard from '../../components/ui/StatsCard';
 import StatusBadge from '../../components/ui/StatusBadge';
 import LoadingSpinner from '../../components/ui/LoadingSpinner';
 import EmptyState from '../../components/ui/EmptyState';
+import CopyButton from '../../components/ui/CopyButton';
 import {
   TruckIcon,
   CubeIcon,
@@ -197,8 +198,9 @@ export default function UserDashboard() {
                       <ClockIcon className="w-4 h-4 text-surface-400" />
                     </div>
                     <div className="min-w-0">
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-1.5">
                         <span className="font-mono text-xs font-bold text-brand-400">{entry.tracking_number}</span>
+                        <CopyButton text={entry.tracking_number} title="Copy tracking number" />
                         <StatusBadge status={entry.status} size="sm" />
                       </div>
                       {entry.notes && (

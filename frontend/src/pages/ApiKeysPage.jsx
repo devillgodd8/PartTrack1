@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { listApiKeys, createApiKey, revokeApiKey } from '../api/apiKeys';
 import LoadingSpinner from '../components/ui/LoadingSpinner';
 import EmptyState from '../components/ui/EmptyState';
@@ -12,10 +12,35 @@ import {
   ShieldCheckIcon,
   CodeBracketIcon,
   XMarkIcon,
+  PaintBrushIcon,
+  SunIcon,
+  MoonIcon,
+  CheckIcon,
   ClockIcon,
+  ArchiveBoxIcon,
+  TruckIcon,
+  PaperAirplaneIcon,
+  MapPinIcon,
 } from '@heroicons/react/24/outline';
 import { formatDistanceToNow, format } from 'date-fns';
 import toast from 'react-hot-toast';
+
+const ACCENT_PRESETS = [
+  { name: 'Corporate Blue', color: '#2563eb' },
+  { name: 'Emerald Green', color: '#059669' },
+  { name: 'Royal Violet', color: '#7c3aed' },
+  { name: 'Amber Orange', color: '#d97706' },
+  { name: 'Crimson Red', color: '#e11d48' },
+  { name: 'Sleek Slate', color: '#334155' },
+];
+
+const PREVIEW_STAGES = [
+  { label: 'Processing', step: 0, status: 'Pending', note: 'Order registered & packaged' },
+  { label: 'Pickup', step: 1, status: 'Picked Up', note: 'Collected from Detroit facility' },
+  { label: 'In Transit', step: 2, status: 'In Transit', note: 'Departed sorting terminal' },
+  { label: 'Out for Delivery', step: 3, status: 'Out for Delivery', note: 'Dispatched with local courier' },
+  { label: 'Delivered', step: 4, status: 'Delivered', note: 'Signed & received at destination' },
+];
 
 export default function ApiKeysPage() {
   const [keys, setKeys] = useState([]);
@@ -27,6 +52,12 @@ export default function ApiKeysPage() {
   const [copiedKey, setCopiedKey] = useState(false);
   const [copiedSnippet, setCopiedSnippet] = useState(false);
   const [activeTab, setActiveTab] = useState('html');
+
+  // Widget customizer state for external website matching
+  const [widgetTheme, setWidgetTheme] = useState('light'); // 'light' | 'dark'
+  const [widgetAccent, setWidgetAccent] = useState('#2563eb');
+  const [widgetRadius, setWidgetRadius] = useState('12px');
+  const [previewStage, setPreviewStage] = useState(2); // In Transit
 
   useEffect(() => {
     loadKeys();
@@ -98,95 +129,381 @@ export default function ApiKeysPage() {
     ? window.location.origin
     : (import.meta.env.VITE_API_URL ? import.meta.env.VITE_API_URL.replace(/\/api\/?$/, '') : 'https://app.reviorcm.com');
 
-  const codeSnippets = {
-    html: `<!-- WordPress / Custom HTML Block Embed -->
-<!-- Paste directly into a "Custom HTML" block in WordPress Gutenberg, Elementor, Divi, or any website -->
-<div id="part-track-widget" style="max-width: 480px; margin: 20px 0; padding: 20px; border: 1px solid #334155; border-radius: 12px; background: #0f172a; color: #f8fafc; font-family: sans-serif;">
-  <h4 style="margin: 0 0 12px 0; font-size: 16px; font-weight: 600;">Track Shipment</h4>
-  <div style="display: flex; gap: 8px;">
-    <input type="text" id="pt-track-input" placeholder="Enter 12-digit Tracking #" style="flex: 1; padding: 10px 14px; border: 1px solid #334155; border-radius: 8px; background: #1e293b; color: #ffffff; font-size: 14px; outline: none;" />
-    <button id="pt-track-btn" style="padding: 10px 18px; background: #0e87ea; color: #ffffff; border: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer;">Track</button>
+  // Dynamically generated code snippets based on the user's customized theme & brand colors
+  const codeSnippets = useMemo(() => {
+    const isLight = widgetTheme === 'light';
+    const bgColor = isLight ? '#ffffff' : '#0f172a';
+    const textColor = isLight ? '#0f172a' : '#f8fafc';
+    const subtextColor = isLight ? '#64748b' : '#94a3b8';
+    const borderColor = isLight ? '#e2e8f0' : '#334155';
+    const cardBg = isLight ? '#f8fafc' : '#1e293b';
+    const trackBg = isLight ? '#e2e8f0' : '#334155';
+    const inputBg = isLight ? '#ffffff' : '#020617';
+
+    return {
+      html: `<!-- PartTrack 5-Point Shipment Tracking Widget -->
+<!-- Paste directly into WordPress Custom HTML, Shopify Liquid, Webflow, or any website -->
+<style>
+  :root {
+    --pt-accent: ${widgetAccent};
+    --pt-bg: ${bgColor};
+    --pt-card-bg: ${cardBg};
+    --pt-text: ${textColor};
+    --pt-muted: ${subtextColor};
+    --pt-border: ${borderColor};
+    --pt-track: ${trackBg};
+    --pt-radius: ${widgetRadius};
+  }
+
+  .pt-widget {
+    max-width: 680px;
+    margin: 24px auto;
+    padding: 24px;
+    background: var(--pt-bg);
+    color: var(--pt-text);
+    border: 1px solid var(--pt-border);
+    border-radius: var(--pt-radius);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+    box-sizing: border-box;
+  }
+  .pt-widget * { box-sizing: border-box; }
+  .pt-widget h4 { margin: 0 0 6px 0; font-size: 18px; font-weight: 700; color: var(--pt-text); }
+  .pt-widget p.pt-desc { margin: 0 0 16px 0; font-size: 13px; color: var(--pt-muted); }
+  
+  .pt-form { display: flex; gap: 8px; margin-bottom: 20px; }
+  .pt-input {
+    flex: 1;
+    padding: 12px 16px;
+    border: 1px solid var(--pt-border);
+    border-radius: calc(var(--pt-radius) - 4px);
+    background: ${inputBg};
+    color: var(--pt-text);
+    font-size: 14px;
+    font-family: monospace;
+    letter-spacing: 0.05em;
+    outline: none;
+  }
+  .pt-input:focus { border-color: var(--pt-accent); }
+  .pt-btn {
+    padding: 12px 22px;
+    background: var(--pt-accent);
+    color: #ffffff;
+    border: none;
+    border-radius: calc(var(--pt-radius) - 4px);
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity 0.2s;
+  }
+  .pt-btn:hover { opacity: 0.9; }
+
+  /* 5-Point Stepper */
+  .pt-stepper { position: relative; margin: 24px 0 16px 0; padding: 0 8px; }
+  .pt-track-bg { position: absolute; left: 24px; right: 24px; top: 16px; height: 4px; background: var(--pt-track); border-radius: 4px; }
+  .pt-track-fill { position: absolute; left: 24px; top: 16px; height: 4px; background: var(--pt-accent); border-radius: 4px; transition: width 0.5s ease; }
+  .pt-steps { position: relative; display: flex; justify-content: space-between; align-items: flex-start; z-index: 2; }
+  .pt-step { display: flex; flex-direction: column; align-items: center; text-align: center; width: 18%; }
+  .pt-node {
+    width: 34px; height: 34px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+    background: var(--pt-card-bg); border: 2px solid var(--pt-border); color: var(--pt-muted); font-size: 12px; font-weight: bold;
+    margin-bottom: 8px; transition: all 0.3s;
+  }
+  .pt-node.completed { background: #10b981; border-color: #10b981; color: #ffffff; }
+  .pt-node.active { background: var(--pt-accent); border-color: var(--pt-accent); color: #ffffff; box-shadow: 0 0 0 4px rgba(37,99,235,0.2); }
+  .pt-label { font-size: 11px; font-weight: 600; color: var(--pt-muted); line-height: 1.2; }
+  .pt-label.active, .pt-label.completed { color: var(--pt-text); }
+  .pt-step-date { font-size: 10px; color: var(--pt-muted); margin-top: 3px; font-family: monospace; }
+
+  /* Details Grid */
+  .pt-details { margin-top: 16px; padding: 14px; background: var(--pt-card-bg); border: 1px solid var(--pt-border); border-radius: calc(var(--pt-radius) - 4px); font-size: 13px; }
+  .pt-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .pt-item-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--pt-muted); font-weight: 600; }
+  .pt-item-val { font-size: 13px; font-weight: 500; color: var(--pt-text); margin-top: 2px; }
+</style>
+
+<div class="pt-widget" id="pt-widget">
+  <h4>Track Consignment</h4>
+  <p class="pt-desc">Enter your 12-digit tracking number to view milestone progress.</p>
+  
+  <div class="pt-form">
+    <input type="text" id="pt-input" class="pt-input" placeholder="e.g. 241190101721" />
+    <button id="pt-btn" class="pt-btn">Track Order</button>
   </div>
-  <div id="pt-track-result" style="margin-top: 14px; font-size: 14px;"></div>
+  
+  <div id="pt-result"></div>
 </div>
 
 <script>
   (function() {
-    var btn = document.getElementById('pt-track-btn');
-    var input = document.getElementById('pt-track-input');
-    var resDiv = document.getElementById('pt-track-result');
+    var API_KEY = '${activeKeySample}';
+    var API_BASE = '${apiBaseUrl}/api/v1/track/';
+    var MILESTONES = ['Processing', 'Pickup', 'In Transit', 'Out for Delivery', 'Delivered'];
+
+    function getStepIndex(status) {
+      if (!status) return 0;
+      var s = status.toLowerCase();
+      if (s === 'delivered') return 4;
+      if (s === 'out for delivery') return 3;
+      if (s === 'in transit' || s === 'delayed' || s === 'on hold') return 2;
+      if (s === 'picked up' || s === 'pickup') return 1;
+      return 0;
+    }
+
+    var btn = document.getElementById('pt-btn');
+    var input = document.getElementById('pt-input');
+    var resDiv = document.getElementById('pt-result');
 
     btn.addEventListener('click', async function() {
       var num = input.value.trim();
-      if (!num) {
-        alert('Please enter a tracking number');
-        return;
-      }
-      resDiv.innerHTML = '<span style="color: #94a3b8;">Searching shipment...</span>';
+      if (!num) return alert('Please enter your tracking number.');
+      resDiv.innerHTML = '<p style="color:var(--pt-muted);font-size:13px;">Searching ledger...</p>';
 
       try {
-        var res = await fetch('${apiBaseUrl}/api/v1/track/' + encodeURIComponent(num), {
-          headers: { 'X-API-Key': '${activeKeySample}' }
+        var res = await fetch(API_BASE + encodeURIComponent(num), {
+          headers: { 'X-API-Key': API_KEY }
         });
         var json = await res.json();
-
         if (!res.ok || !json.success) {
-          resDiv.innerHTML = '<div style="padding: 10px; background: rgba(239, 68, 68, 0.1); border-radius: 6px; color: #f87171;">' + (json.error || 'Tracking record not found') + '</div>';
+          resDiv.innerHTML = '<div style="padding:12px;color:#ef4444;background:rgba(239,68,68,0.1);border-radius:8px;">' + (json.error || 'Tracking record not found') + '</div>';
           return;
         }
 
         var d = json.data;
-        resDiv.innerHTML = '<div style="padding: 14px; background: #1e293b; border-radius: 8px; border-left: 4px solid #38bdf8;">' +
-          '<div style="font-weight: 600; font-size: 15px; color: #38bdf8; margin-bottom: 6px;">Status: ' + d.current_status + '</div>' +
-          '<div style="color: #cbd5e1; font-size: 13px; line-height: 1.5;">' +
-            '<div><strong>Part:</strong> ' + d.part_type + '</div>' +
-            '<div><strong>Vehicle:</strong> ' + d.vehicle.year + ' ' + d.vehicle.make + ' ' + d.vehicle.model + '</div>' +
-            '<div><strong>Route:</strong> ' + d.shipment.origin + ' &rarr; ' + d.shipment.destination + '</div>' +
-            (d.estimated_delivery_date ? '<div><strong>Est. Delivery:</strong> ' + d.estimated_delivery_date + '</div>' : '') +
-          '</div>' +
-        '</div>';
+        var activeStep = getStepIndex(d.current_status);
+        var fillPct = (activeStep / 4) * 100;
+
+        // Build 5 points HTML
+        var stepsHtml = '';
+        for (var i = 0; i < MILESTONES.length; i++) {
+          var isCompleted = i < activeStep;
+          var isActive = i === activeStep;
+          var cls = isCompleted ? 'completed' : (isActive ? 'active' : '');
+          var checkIcon = isCompleted || (isActive && activeStep === 4) ? '&#10003;' : (i + 1);
+          stepsHtml += '<div class="pt-step">' +
+            '<div class="pt-node ' + cls + '">' + checkIcon + '</div>' +
+            '<div class="pt-label ' + cls + '">' + MILESTONES[i] + '</div>' +
+          '</div>';
+        }
+
+        resDiv.innerHTML =
+          '<div style="margin-top:16px;">' +
+            '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">' +
+              '<div>' +
+                '<span style="font-size:11px;color:var(--pt-muted);text-transform:uppercase;font-weight:600;">Status</span>' +
+                '<div style="font-size:16px;font-weight:700;color:var(--pt-accent);">' + d.current_status + '</div>' +
+              '</div>' +
+              (d.estimated_delivery_date ? '<div style="text-align:right;"><span style="font-size:11px;color:var(--pt-muted);text-transform:uppercase;font-weight:600;">Est. Delivery</span><div style="font-size:13px;font-weight:600;">' + new Date(d.estimated_delivery_date).toLocaleDateString() + '</div></div>' : '') +
+            '</div>' +
+
+            '<div class="pt-stepper">' +
+              '<div class="pt-track-bg"></div>' +
+              '<div class="pt-track-fill" style="width: calc(' + fillPct + '% * 0.9);"></div>' +
+              '<div class="pt-steps">' + stepsHtml + '</div>' +
+            '</div>' +
+
+            '<div class="pt-details">' +
+              '<div class="pt-grid">' +
+                '<div><div class="pt-item-label">Part Item</div><div class="pt-item-val">' + (d.part_type || 'Automotive Component') + '</div></div>' +
+                '<div><div class="pt-item-label">Vehicle Fitment</div><div class="pt-item-val">' + d.vehicle.year + ' ' + d.vehicle.make + ' ' + d.vehicle.model + '</div></div>' +
+                '<div><div class="pt-item-label">Origin</div><div class="pt-item-val">' + (d.shipment.origin || 'Origin Terminal') + '</div></div>' +
+                '<div><div class="pt-item-label">Destination</div><div class="pt-item-val">' + (d.shipment.destination || 'Delivery Address') + '</div></div>' +
+              '</div>' +
+            '</div>' +
+          '</div>';
       } catch (err) {
-        resDiv.innerHTML = '<div style="padding: 10px; background: rgba(239, 68, 68, 0.1); border-radius: 6px; color: #f87171;">Unable to connect to tracking server.</div>';
+        resDiv.innerHTML = '<div style="padding:12px;color:#ef4444;background:rgba(239,68,68,0.1);border-radius:8px;">Network connection error.</div>';
       }
     });
   })();
 </script>`,
-    javascript: `// JavaScript (Browser Fetch)
-async function trackShipment(trackingNumber) {
-  const res = await fetch(\`${apiBaseUrl}/api/v1/track/\${trackingNumber}\`, {
+
+      react: `// React / Next.js Component with 5-Point Tracking Status Bar
+// Compatible with Tailwind CSS and CSS Custom Properties
+import React, { useState } from 'react';
+
+const MILESTONES = ['Processing', 'Pickup', 'In Transit', 'Out for Delivery', 'Delivered'];
+
+function getStepIndex(status) {
+  if (!status) return 0;
+  const s = status.toLowerCase();
+  if (s === 'delivered') return 4;
+  if (s === 'out for delivery') return 3;
+  if (s === 'in transit' || s === 'delayed' || s === 'on hold') return 2;
+  if (s === 'picked up' || s === 'pickup') return 1;
+  return 0;
+}
+
+export default function PartTrackWidget({
+  apiKey = '${activeKeySample}',
+  accentColor = '${widgetAccent}',
+  theme = '${widgetTheme}', // 'light' or 'dark'
+}) {
+  const [trackingNumber, setTrackingNumber] = useState('');
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+
+  const handleTrack = async (e) => {
+    e.preventDefault();
+    if (!trackingNumber.trim()) return;
+    setLoading(true);
+    setError(null);
+
+    try {
+      const res = await fetch(\`${apiBaseUrl}/api/v1/track/\${encodeURIComponent(trackingNumber.trim())}\`, {
+        headers: { 'X-API-Key': apiKey }
+      });
+      const json = await res.json();
+      if (!res.ok || !json.success) {
+        throw new Error(json.error || 'Tracking number not found');
+      }
+      setData(json.data);
+    } catch (err) {
+      setError(err.message);
+      setData(null);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const isDark = theme === 'dark';
+  const activeStep = data ? getStepIndex(data.current_status) : 0;
+  const progressPercent = (activeStep / 4) * 100;
+
+  return (
+    <div style={{
+      maxWidth: '680px',
+      margin: '20px auto',
+      padding: '24px',
+      borderRadius: '${widgetRadius}',
+      backgroundColor: isDark ? '#0f172a' : '#ffffff',
+      color: isDark ? '#f8fafc' : '#0f172a',
+      border: isDark ? '1px solid #334155' : '1px solid #e2e8f0',
+      boxShadow: '0 4px 20px rgba(0,0,0,0.06)'
+    }}>
+      <h3 style={{ margin: '0 0 8px 0', fontSize: '18px', fontWeight: 700 }}>Track Shipment</h3>
+      <form onSubmit={handleTrack} style={{ display: 'flex', gap: '8px', marginBottom: '16px' }}>
+        <input
+          type="text"
+          value={trackingNumber}
+          onChange={(e) => setTrackingNumber(e.target.value)}
+          placeholder="Enter 12-digit tracking number"
+          style={{
+            flex: 1,
+            padding: '10px 14px',
+            borderRadius: '8px',
+            border: isDark ? '1px solid #334155' : '1px solid #cbd5e1',
+            backgroundColor: isDark ? '#020617' : '#ffffff',
+            color: isDark ? '#ffffff' : '#0f172a'
+          }}
+        />
+        <button
+          type="submit"
+          disabled={loading}
+          style={{
+            padding: '10px 20px',
+            backgroundColor: accentColor,
+            color: '#ffffff',
+            border: 'none',
+            borderRadius: '8px',
+            fontWeight: 600,
+            cursor: 'pointer'
+          }}
+        >
+          {loading ? 'Searching...' : 'Track'}
+        </button>
+      </form>
+
+      {error && <div style={{ color: '#ef4444', fontSize: '13px' }}>{error}</div>}
+
+      {data && (
+        <div>
+          {/* 5-Point Stepper */}
+          <div style={{ position: 'relative', margin: '24px 0 20px 0' }}>
+            <div style={{ position: 'absolute', left: '20px', right: '20px', top: '15px', height: '4px', backgroundColor: isDark ? '#334155' : '#e2e8f0' }} />
+            <div style={{ position: 'absolute', left: '20px', top: '15px', height: '4px', width: \`calc(\${progressPercent}% * 0.9)\`, backgroundColor: accentColor, transition: 'width 0.4s ease' }} />
+            <div style={{ position: 'relative', display: 'flex', justifyContent: 'space-between' }}>
+              {MILESTONES.map((label, idx) => {
+                const isCompleted = idx < activeStep;
+                const isActive = idx === activeStep;
+                return (
+                  <div key={label} style={{ textAlign: 'center', width: '20%' }}>
+                    <div style={{
+                      width: '32px',
+                      height: '32px',
+                      borderRadius: '50%',
+                      margin: '0 auto 6px auto',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      fontSize: '12px',
+                      fontWeight: 'bold',
+                      color: isCompleted || isActive ? '#ffffff' : '#94a3b8',
+                      backgroundColor: isCompleted ? '#10b981' : (isActive ? accentColor : (isDark ? '#1e293b' : '#f1f5f9')),
+                      border: isCompleted ? '2px solid #10b981' : (isActive ? \`2px solid \${accentColor}\` : '2px solid #cbd5e1')
+                    }}>
+                      {isCompleted || (isActive && activeStep === 4) ? '✓' : idx + 1}
+                    </div>
+                    <div style={{ fontSize: '11px', fontWeight: isActive ? 700 : 500 }}>{label}</div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}`,
+
+      javascript: `// Pure JavaScript Fetch Implementation
+async function fetchTracking(trackingNumber) {
+  const res = await fetch(\`${apiBaseUrl}/api/v1/track/\${encodeURIComponent(trackingNumber)}\`, {
     headers: {
       'X-API-Key': '${activeKeySample}'
     }
   });
-  const data = await res.json();
-  if (data.success) {
-    console.log('Status:', data.data.current_status);
-    console.log('Timeline:', data.data.history);
-  } else {
-    alert(data.error);
+  const json = await res.json();
+  if (!res.ok || !json.success) {
+    throw new Error(json.error || 'Tracking lookup failed');
   }
+
+  // Response contains 5-point milestone data:
+  console.log('Current Status:', json.data.current_status);
+  console.log('Origin:', json.data.shipment.origin);
+  console.log('Destination:', json.data.shipment.destination);
+  console.log('Milestone History:', json.data.history);
+  return json.data;
 }`,
-    curl: `# cURL (Terminal / Command Line)
-curl -X GET "${apiBaseUrl}/api/v1/track/573978943296" \\
+
+      curl: `# cURL Request
+curl -X GET "${apiBaseUrl}/api/v1/track/241190101721" \\
   -H "X-API-Key: ${activeKeySample}"`,
-    node: `// Node.js (Axios)
+
+      node: `// Node.js (Axios)
 const axios = require('axios');
 
-async function track(number) {
-  const { data } = await axios.get(\`${apiBaseUrl}/api/v1/track/\${number}\`, {
-    headers: { 'X-API-Key': '${activeKeySample}' }
+async function getTracking(trackingNumber) {
+  const { data } = await axios.get(\`${apiBaseUrl}/api/v1/track/\${trackingNumber}\`, {
+    headers: {
+      'X-API-Key': '${activeKeySample}'
+    }
   });
   return data;
 }`,
-    python: `# Python (requests)
+
+      python: `# Python (requests)
 import requests
 
 response = requests.get(
-    "${apiBaseUrl}/api/v1/track/573978943296",
+    "${apiBaseUrl}/api/v1/track/241190101721",
     headers={"X-API-Key": "${activeKeySample}"}
 )
-print(response.json())`,
-  };
+tracking_data = response.json()
+print(tracking_data)`,
+    };
+  }, [widgetTheme, widgetAccent, widgetRadius, activeKeySample, apiBaseUrl]);
 
   return (
     <div className="space-y-8 animate-fade-in max-w-5xl mx-auto pb-12">
@@ -198,7 +515,7 @@ print(response.json())`,
             API Keys & External Integration
           </h1>
           <p className="mt-1 text-xs sm:text-sm text-surface-400">
-            Generate scoped API tokens to embed live shipment lookup directly into WordPress or custom web portals.
+            Generate scoped API tokens and embed white-label shipment tracking widgets matching your client's brand.
           </p>
         </div>
         <button
@@ -320,6 +637,270 @@ print(response.json())`,
         )}
       </div>
 
+      {/* Widget Customizer & Interactive Live Preview */}
+      <div className="card p-5 sm:p-7 bg-surface-900 border border-surface-800 space-y-6">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-surface-800">
+          <div>
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-lg bg-brand-500/10 border border-brand-500/20 flex items-center justify-center text-brand-400">
+                <PaintBrushIcon className="w-4 h-4" />
+              </div>
+              <h2 className="text-base font-bold text-surface-100">
+                External Website Theme Customizer
+              </h2>
+            </div>
+            <p className="text-xs text-surface-400 mt-1">
+              Adjust the theme and brand palette to match your external website's UI/UX. The code snippets below update automatically.
+            </p>
+          </div>
+        </div>
+
+        {/* Customizer Controls */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 p-4 rounded-xl bg-surface-950/70 border border-surface-800/80">
+          {/* Theme Mode Selector */}
+          <div className="space-y-2">
+            <label className="text-xs font-semibold text-surface-300 uppercase tracking-wider block">
+              Website Theme
+            </label>
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                onClick={() => setWidgetTheme('light')}
+                className={`py-2 px-3 rounded-lg text-xs font-medium flex items-center justify-center gap-1.5 transition-colors border ${
+                  widgetTheme === 'light'
+                    ? 'bg-brand-500 text-white border-brand-400 shadow-sm'
+                    : 'bg-surface-900 text-surface-300 border-surface-700 hover:bg-surface-800'
+                }`}
+              >
+                <SunIcon className="w-3.5 h-3.5" />
+                <span>Light Theme</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setWidgetTheme('dark')}
+                className={`py-2 px-3 rounded-lg text-xs font-medium flex items-center justify-center gap-1.5 transition-colors border ${
+                  widgetTheme === 'dark'
+                    ? 'bg-brand-500 text-white border-brand-400 shadow-sm'
+                    : 'bg-surface-900 text-surface-300 border-surface-700 hover:bg-surface-800'
+                }`}
+              >
+                <MoonIcon className="w-3.5 h-3.5" />
+                <span>Dark Theme</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Accent Color Picker */}
+          <div className="space-y-2">
+            <label className="text-xs font-semibold text-surface-300 uppercase tracking-wider block">
+              Brand Accent Color
+            </label>
+            <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1.5 flex-wrap">
+                {ACCENT_PRESETS.map((preset) => (
+                  <button
+                    key={preset.color}
+                    type="button"
+                    onClick={() => setWidgetAccent(preset.color)}
+                    style={{ backgroundColor: preset.color }}
+                    className={`w-6 h-6 rounded-full flex items-center justify-center transition-transform hover:scale-110 ${
+                      widgetAccent === preset.color ? 'ring-2 ring-white ring-offset-2 ring-offset-surface-950' : ''
+                    }`}
+                    title={preset.name}
+                  >
+                    {widgetAccent === preset.color && (
+                      <CheckIcon className="w-3 h-3 text-white stroke-[3]" />
+                    )}
+                  </button>
+                ))}
+              </div>
+              <input
+                type="color"
+                value={widgetAccent}
+                onChange={(e) => setWidgetAccent(e.target.value)}
+                className="w-7 h-7 rounded border border-surface-700 cursor-pointer bg-transparent"
+                title="Custom Hex Color"
+              />
+            </div>
+          </div>
+
+          {/* Corner Radius */}
+          <div className="space-y-2">
+            <label className="text-xs font-semibold text-surface-300 uppercase tracking-wider block">
+              Border Radius
+            </label>
+            <div className="grid grid-cols-3 gap-1.5">
+              {[
+                { label: 'Sharp', val: '4px' },
+                { label: 'Rounded', val: '12px' },
+                { label: 'Pill', val: '20px' },
+              ].map((r) => (
+                <button
+                  key={r.val}
+                  type="button"
+                  onClick={() => setWidgetRadius(r.val)}
+                  className={`py-2 px-2 text-center rounded-lg text-xs font-medium border transition-colors ${
+                    widgetRadius === r.val
+                      ? 'bg-brand-500 text-white border-brand-400 shadow-sm'
+                      : 'bg-surface-900 text-surface-300 border-surface-700 hover:bg-surface-800'
+                  }`}
+                >
+                  {r.label}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Live Interactive Preview Box */}
+        <div className="space-y-3">
+          <div className="flex items-center justify-between text-xs">
+            <span className="font-semibold text-surface-300 uppercase tracking-wider">
+              Live Interactive Preview ({widgetTheme.toUpperCase()} MODE)
+            </span>
+            <div className="flex items-center gap-1 text-[11px] text-surface-400">
+              <span>Test Stage:</span>
+              <div className="inline-flex rounded-lg bg-surface-950 p-0.5 border border-surface-800">
+                {PREVIEW_STAGES.map((s) => (
+                  <button
+                    key={s.step}
+                    type="button"
+                    onClick={() => setPreviewStage(s.step)}
+                    className={`px-2 py-0.5 rounded text-[10px] font-medium transition-colors ${
+                      previewStage === s.step
+                        ? 'bg-brand-500 text-white'
+                        : 'text-surface-400 hover:text-surface-200'
+                    }`}
+                  >
+                    {s.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Mock Container matching the customized theme */}
+          <div
+            className="p-6 transition-all duration-300 border shadow-md"
+            style={{
+              backgroundColor: widgetTheme === 'light' ? '#ffffff' : '#0f172a',
+              color: widgetTheme === 'light' ? '#0f172a' : '#f8fafc',
+              borderColor: widgetTheme === 'light' ? '#e2e8f0' : '#334155',
+              borderRadius: widgetRadius,
+            }}
+          >
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 mb-5 border-b"
+              style={{ borderColor: widgetTheme === 'light' ? '#e2e8f0' : '#1e293b' }}
+            >
+              <div>
+                <span className="text-[10px] uppercase font-bold tracking-wider opacity-60">Consignment Status</span>
+                <h4 className="text-lg font-bold mt-0.5" style={{ color: widgetAccent }}>
+                  {PREVIEW_STAGES[previewStage].status}
+                </h4>
+              </div>
+              <div className="text-left sm:text-right">
+                <span className="text-[10px] uppercase font-bold tracking-wider opacity-60">Est. Delivery</span>
+                <p className="text-xs font-mono font-semibold">Sep 18, 2026</p>
+              </div>
+            </div>
+
+            {/* 5-Point Stepper Bar in Live Preview */}
+            <div className="relative mb-6 px-2">
+              {/* Base Track */}
+              <div
+                className="absolute left-6 right-6 top-4 h-1 rounded-full"
+                style={{ backgroundColor: widgetTheme === 'light' ? '#e2e8f0' : '#334155' }}
+              />
+              {/* Active Progress Fill */}
+              <div
+                className="absolute left-6 top-4 h-1 rounded-full transition-all duration-500"
+                style={{
+                  width: `calc(${(previewStage / 4) * 100}% * 0.9)`,
+                  backgroundColor: widgetAccent,
+                }}
+              />
+
+              {/* 5 Points */}
+              <div className="relative flex justify-between items-start">
+                {[
+                  { label: 'Processing', icon: ClockIcon },
+                  { label: 'Pickup', icon: ArchiveBoxIcon },
+                  { label: 'In Transit', icon: TruckIcon },
+                  { label: 'Out for Delivery', icon: PaperAirplaneIcon },
+                  { label: 'Delivered', icon: MapPinIcon },
+                ].map((pt, idx) => {
+                  const isPast = idx < previewStage;
+                  const isCurrent = idx === previewStage;
+                  const isDelivered = previewStage === 4;
+                  const Icon = pt.icon;
+
+                  let nodeBg = widgetTheme === 'light' ? '#f8fafc' : '#1e293b';
+                  let nodeBorder = widgetTheme === 'light' ? '#cbd5e1' : '#475569';
+                  let nodeColor = widgetTheme === 'light' ? '#94a3b8' : '#64748b';
+
+                  if (isPast || (isCurrent && isDelivered)) {
+                    nodeBg = '#10b981';
+                    nodeBorder = '#10b981';
+                    nodeColor = '#ffffff';
+                  } else if (isCurrent) {
+                    nodeBg = widgetAccent;
+                    nodeBorder = widgetAccent;
+                    nodeColor = '#ffffff';
+                  }
+
+                  return (
+                    <div key={pt.label} className="flex flex-col items-center text-center w-[18%]">
+                      <div
+                        className="w-8 h-8 rounded-full flex items-center justify-center transition-all duration-300 relative z-10 mb-2 shadow-sm"
+                        style={{
+                          backgroundColor: nodeBg,
+                          borderColor: nodeBorder,
+                          borderWidth: '2px',
+                          color: nodeColor,
+                          boxShadow: isCurrent ? `0 0 12px ${widgetAccent}55` : undefined,
+                        }}
+                      >
+                        {isPast || (isCurrent && isDelivered) ? (
+                          <CheckIcon className="w-4 h-4 stroke-[2.5]" />
+                        ) : (
+                          <Icon className="w-4 h-4" />
+                        )}
+                      </div>
+                      <span className="text-[11px] font-semibold leading-tight">{pt.label}</span>
+                      <span className="text-[10px] opacity-60 mt-0.5">
+                        {idx <= previewStage ? 'Verified' : 'Pending'}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Spec Details Preview */}
+            <div
+              className="p-3.5 rounded-lg grid grid-cols-2 sm:grid-cols-3 gap-3 text-xs"
+              style={{
+                backgroundColor: widgetTheme === 'light' ? '#f1f5f9' : '#1e293b',
+                border: widgetTheme === 'light' ? '1px solid #e2e8f0' : '1px solid #334155',
+              }}
+            >
+              <div>
+                <span className="text-[9px] uppercase font-bold tracking-wider opacity-60">Part</span>
+                <p className="font-semibold mt-0.5">Engine (V8 5.0L)</p>
+              </div>
+              <div>
+                <span className="text-[9px] uppercase font-bold tracking-wider opacity-60">Vehicle</span>
+                <p className="font-semibold mt-0.5">2022 Ford F-150</p>
+              </div>
+              <div>
+                <span className="text-[9px] uppercase font-bold tracking-wider opacity-60">Route</span>
+                <p className="font-semibold mt-0.5">Detroit &rarr; Dallas</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       {/* Integration Guide & Code Samples */}
       <div className="card p-5 sm:p-6 bg-surface-900 border border-surface-800 space-y-4">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-surface-800">
@@ -329,9 +910,11 @@ print(response.json())`,
             </div>
             <div>
               <h3 className="text-sm font-semibold text-surface-100 uppercase tracking-wider">
-                How to Integrate on Your Website
+                Embed Code Snippets (Themed for Your Site)
               </h3>
-              <p className="text-xs text-surface-400">Embed snippets or API queries into your frontend application</p>
+              <p className="text-xs text-surface-400">
+                Copy and paste the code below into WordPress, Shopify, Next.js, or custom backend
+              </p>
             </div>
           </div>
           <button
@@ -341,25 +924,26 @@ print(response.json())`,
             {copiedSnippet ? (
               <>
                 <CheckCircleIcon className="w-3.5 h-3.5 text-emerald-400" />
-                <span>Copied</span>
+                <span>Copied Code</span>
               </>
             ) : (
               <>
                 <ClipboardDocumentIcon className="w-3.5 h-3.5" />
-                <span>Copy Code</span>
+                <span>Copy Snippet</span>
               </>
             )}
           </button>
         </div>
 
         <p className="text-xs text-surface-400 leading-relaxed">
-          Send an HTTP GET request to <code className="text-brand-400 font-mono bg-surface-950 px-1.5 py-0.5 rounded border border-surface-800">{apiBaseUrl}/api/v1/track/:trackingNumber</code> with your API key in the <code className="text-amber-400 font-mono bg-surface-950 px-1.5 py-0.5 rounded border border-surface-800">X-API-Key</code> header.
+          The code below includes the complete <strong className="text-surface-200">5-point status bar</strong> configured with your chosen theme (<strong className="capitalize text-surface-200">{widgetTheme}</strong>) and accent color (<code className="text-brand-400 font-mono">{widgetAccent}</code>).
         </p>
 
         {/* Code Tabs */}
         <div className="flex flex-wrap gap-1.5">
           {[
-            { id: 'html', label: 'WordPress / HTML Embed' },
+            { id: 'html', label: 'WordPress / HTML Embed (Universal)' },
+            { id: 'react', label: 'React / Next.js Component' },
             { id: 'javascript', label: 'JavaScript (Fetch)' },
             { id: 'curl', label: 'cURL' },
             { id: 'node', label: 'Node.js' },
@@ -410,7 +994,7 @@ print(response.json())`,
                   type="text"
                   value={keyName}
                   onChange={(e) => setKeyName(e.target.value)}
-                  placeholder="e.g. WordPress Main Store, Customer Portal"
+                  placeholder="e.g. WordPress Main Store, Client Webflow Site"
                   className="input"
                   autoFocus
                   required

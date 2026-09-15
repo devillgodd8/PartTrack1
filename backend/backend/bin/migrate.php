@@ -42,13 +42,28 @@ $db->exec("
         current_status VARCHAR(50) NOT NULL DEFAULT 'Pending',
         estimated_delivery_date DATE NULL,
         notes TEXT NULL,
+        customer_name VARCHAR(255) NULL,
+        customer_number VARCHAR(100) NULL,
         assigned_user_id VARCHAR(36) NOT NULL REFERENCES users(id),
         created_by_id VARCHAR(36) NOT NULL REFERENCES users(id),
         date_created {$timestampType} DEFAULT CURRENT_TIMESTAMP,
         last_updated {$timestampType} DEFAULT CURRENT_TIMESTAMP
     );
 ");
-echo "✓ Tracking records table checked/created\n";
+
+// Alter tracking_records to ensure customer columns exist on existing databases
+try {
+    $db->exec("ALTER TABLE tracking_records ADD COLUMN customer_name VARCHAR(255) NULL");
+} catch (Throwable $e) {
+    // Column may already exist
+}
+try {
+    $db->exec("ALTER TABLE tracking_records ADD COLUMN customer_number VARCHAR(100) NULL");
+} catch (Throwable $e) {
+    // Column may already exist
+}
+
+echo "✓ Tracking records table checked/created/updated\n";
 
 // 3. status_history table
 $db->exec("

@@ -84,6 +84,20 @@ const createTrackingValidation = [
     .optional({ values: 'falsy' })
     .isISO8601()
     .withMessage('Invalid date format'),
+  body('customer_name')
+    .trim()
+    .notEmpty()
+    .withMessage('Customer name is required')
+    .isLength({ max: 255 })
+    .withMessage('Customer name cannot exceed 255 characters')
+    .escape(),
+  body('customer_number')
+    .trim()
+    .notEmpty()
+    .withMessage('Customer number is required')
+    .isLength({ max: 100 })
+    .withMessage('Customer number cannot exceed 100 characters')
+    .escape(),
   body('notes').optional({ values: 'falsy' }).trim(),
   body('assigned_user_id').optional().isUUID().withMessage('Invalid user ID'),
 ];
@@ -138,6 +152,16 @@ const updateTrackingValidation = [
     .optional({ values: 'falsy' })
     .isISO8601()
     .withMessage('Invalid date format'),
+  body('customer_name')
+    .optional({ values: 'falsy' })
+    .trim()
+    .isLength({ max: 255 })
+    .withMessage('Customer name cannot exceed 255 characters'),
+  body('customer_number')
+    .optional({ values: 'falsy' })
+    .trim()
+    .isLength({ max: 100 })
+    .withMessage('Customer number cannot exceed 100 characters'),
   body('notes').optional({ values: 'falsy' }).trim(),
   body('assigned_user_id').optional().isUUID().withMessage('Invalid user ID'),
 ];
