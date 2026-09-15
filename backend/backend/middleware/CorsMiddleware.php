@@ -29,7 +29,7 @@ class CorsMiddleware {
             header('Access-Control-Allow-Credentials: true');
             header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
             header('Access-Control-Allow-Headers: Content-Type, Authorization, X-API-Key, Accept, Origin, X-Requested-With, Cache-Control, Pragma');
-            header('Access-Control-Expose-Headers: Set-Cookie, Authorization');
+            header('Access-Control-Expose-Headers: Set-Cookie, Authorization, X-Debug-Auth-Failure, X-Debug-Auth-Success, X-Debug-Server');
             header('Access-Control-Max-Age: 86400');
         }
 

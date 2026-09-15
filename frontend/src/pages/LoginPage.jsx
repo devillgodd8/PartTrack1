@@ -38,12 +38,28 @@ export default function LoginPage() {
         navigate(user.role === 'admin' ? '/admin' : '/dashboard');
       }
     } catch (err) {
-      const errData = err.response?.data;
-      const errorMsg =
-        typeof errData?.error === 'string'
-          ? errData.error
-          : errData?.error?.message || errData?.message || 'Invalid email or password';
-      toast.error(errorMsg);
+      const res = err.response;
+      const status = res?.status;
+      const errData = res?.data;
+      const debugHeader = res?.headers?.['x-debug-auth-failure'];
+
+      let errorMsg = 'Invalid email or password';
+
+      if (typeof errData === 'string' && errData.includes('<html')) {
+        errorMsg = `Server Error (${status || 500}): HTML response received. Web server or WAF blocked the request. Check console.`;
+      } else if (debugHeader === 'AccountDeactivated' || errData?.error?.includes('deactivated')) {
+        errorMsg = '403 Forbidden: Account is deactivated. Contact administrator.';
+      } else if (status === 403) {
+        errorMsg = `403 Forbidden: ${errData?.error || 'Access denied by server security policy. Check browser console.'}`;
+      } else if (typeof errData?.error === 'string') {
+        errorMsg = errData.error;
+      } else if (errData?.error?.message) {
+        errorMsg = errData.error.message;
+      } else if (errData?.message) {
+        errorMsg = errData.message;
+      }
+
+      toast.error(errorMsg, { duration: 6000 });
     } finally {
       setLoading(false);
     }

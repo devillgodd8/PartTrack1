@@ -23,22 +23,34 @@ class AuthController {
         $email = strtolower(trim($body['email']));
         $password = $body['password'];
 
+        header('X-Debug-Server: PHP-PartTrack');
+        error_log("[Auth Diagnostic] Login attempt for email: '{$email}' from IP: " . ($_SERVER['REMOTE_ADDR'] ?? 'unknown'));
+
         $db = Database::getConnection();
         $stmt = $db->prepare("SELECT * FROM users WHERE LOWER(email) = :email LIMIT 1");
         $stmt->execute([':email' => $email]);
         $user = $stmt->fetch();
 
         if (!$user) {
+            header('X-Debug-Auth-Failure: UserNotFound');
+            error_log("[Auth Diagnostic] User not found for email: '{$email}'");
             Response::error('Invalid email or password', 401);
         }
 
         if (!$user['is_active']) {
+            header('X-Debug-Auth-Failure: AccountDeactivated');
+            error_log("[Auth Diagnostic] Account '{$email}' is marked inactive (is_active=" . var_export($user['is_active'], true) . ")");
             Response::error('Account is deactivated. Contact your administrator.', 403);
         }
 
         if (!password_verify($password, $user['password_hash'])) {
+            header('X-Debug-Auth-Failure: PasswordMismatch');
+            error_log("[Auth Diagnostic] Password mismatch for user: '{$email}'");
             Response::error('Invalid email or password', 401);
         }
+
+        header('X-Debug-Auth-Success: true');
+        error_log("[Auth Diagnostic] Login successful for user: '{$email}' (role: {$user['role']})");
 
         $trackingPrefix = $user['tracking_prefix'] ?: TrackingNumberService::ensureUserPrefix($db, $user['id']);
 
