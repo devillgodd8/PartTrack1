@@ -4,6 +4,10 @@
   "outputDirectory": "frontend/dist",
   "rewrites": [
     {
+      "source": "/api",
+      "destination": "https://app.reviorcm.com/backend/index.php/api/health"
+    },
+    {
       "source": "/api/(.*)",
       "destination": "https://app.reviorcm.com/backend/index.php/api/$1"
     },
