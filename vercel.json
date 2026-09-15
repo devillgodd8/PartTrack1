@@ -5,7 +5,7 @@
   "rewrites": [
     {
       "source": "/api/(.*)",
-      "destination": "https://app.reviorcm.com/backend/api/$1"
+      "destination": "https://app.reviorcm.com/backend/index.php/api/$1"
     },
     {
       "source": "/(.*)",

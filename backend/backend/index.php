@@ -21,9 +21,23 @@ require_once __DIR__ . '/controllers/PublicTrackingController.php';
 $requestUri = $_SERVER['REQUEST_URI'] ?? '/';
 $rawPath = parse_url($requestUri, PHP_URL_PATH) ?? '/';
 
-// Normalize path: strip directory prefixes like /backend/backend or /backend, and optional /index.php
-$cleanPath = preg_replace('#^/(?:backend/)*(?:index\.php)?/?#', '/', $rawPath);
-$path = ($cleanPath === '' || $cleanPath === false) ? '/' : $cleanPath;
+// 1. Prefer PATH_INFO if available (e.g. when executing /backend/index.php/api/...)
+if (!empty($_SERVER['PATH_INFO'])) {
+    $path = $_SERVER['PATH_INFO'];
+} elseif (!empty($_GET['route'])) {
+    $path = $_GET['route'];
+} elseif (!empty($_GET['path'])) {
+    $path = $_GET['path'];
+} else {
+    // 2. Strip directory prefixes like /backend/backend or /backend, and optional /index.php
+    $cleanPath = preg_replace('#^/(?:backend/)*(?:index\.php)?/?#', '/', $rawPath);
+    $path = ($cleanPath === '' || $cleanPath === false) ? '/' : $cleanPath;
+}
+
+// Ensure leading slash
+if (!str_starts_with($path, '/')) {
+    $path = '/' . $path;
+}
 $method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
 
 // Handle CORS
