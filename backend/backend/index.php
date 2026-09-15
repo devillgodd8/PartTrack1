@@ -19,7 +19,11 @@ require_once __DIR__ . '/controllers/PublicTrackingController.php';
 
 // Extract URI path
 $requestUri = $_SERVER['REQUEST_URI'] ?? '/';
-$path = parse_url($requestUri, PHP_URL_PATH);
+$rawPath = parse_url($requestUri, PHP_URL_PATH) ?? '/';
+
+// Normalize path: strip directory prefixes like /backend/backend or /backend, and optional /index.php
+$cleanPath = preg_replace('#^/(?:backend/)*(?:index\.php)?/?#', '/', $rawPath);
+$path = ($cleanPath === '' || $cleanPath === false) ? '/' : $cleanPath;
 $method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
 
 // Handle CORS
