@@ -5,5 +5,6 @@ frontend/node_modules
 .env.local
 backend/data/*.db
 *.log
-api
-backend
+/api/index.js
+/backend
+!frontend/src/api/**
